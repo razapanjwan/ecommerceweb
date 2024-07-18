@@ -90,7 +90,7 @@ def get_user_by_username(session:Session,username:str) -> User:
     if not username:
         return None
     
-    user = session.exec(select(User).where(User.username == username)).one()
+    user = session.exec(select(User).where(User.username == username)).first()
     if user is None:
         raise HTTPException(status_code=404, detail="user not found!")
     return user 

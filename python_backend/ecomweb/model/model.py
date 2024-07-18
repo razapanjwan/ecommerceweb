@@ -60,7 +60,13 @@ class UserUpdate(SQLModel):
     password:str | None = None
     firstname:str | None = None
     lastname:str | None = None 
-    
+
+class Image(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True, index=True)
+    filename: str
+    content_type: str
+    image_data: bytes
+
 class Size(str,Enum):
     LARGE:str = "large"
     SMALL:str = "small"
@@ -73,8 +79,10 @@ class ProductBase(SQLModel):
     product_slug:str
     
     
+
 class Product(ProductBase,table=True):
     product_id:int | None = Field(primary_key=True,default=None)
+    image_id: int = Field(foreign_key="image.id")
     
 
 class ProductCreate(ProductBase):

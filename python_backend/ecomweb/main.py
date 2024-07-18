@@ -10,6 +10,9 @@ from fastapi import HTTPException
 from datetime import timedelta
 from ecomweb.settings.setting import *
 from ecomweb.middlewares.middleware import authorize
+import io
+from fastapi.responses import StreamingResponse
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Creating tables..")
@@ -99,6 +102,33 @@ def delete_user(session:Annotated[Session, Depends(get_session)], user_id:int):
     return {
         "message":"User deleted"
     }
+
+@app.post("/upload-file", tags=["Image"])
+async def get_file(file: Annotated[UploadFile, File(title="Product Image")], session: Annotated[Session, Depends(get_session)], user: Annotated[User, Depends(get_current_user)]):
+    if file.content_type.startswith("image/"):
+        try:
+            image_data = await file.read()
+            image = Image(
+                filename=file.filename,
+                content_type=file.content_type,
+                image_data=image_data
+            )
+            session.add(image)
+            session.commit()
+            session.refresh(image)
+            return {"id": image.id, "filename": image.filename}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="An error occurred while saving the image.")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only images are allowed.")
+
+@app.get("/images/{image_id}", tags=["Image"])
+def read_image(image_id: int, session: Annotated[Session, Depends(get_session)]):
+    image = session.get(Image, image_id)
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return StreamingResponse(io.BytesIO(image.image_data), media_type=image.content_type)
 
 
 @app.post("/addproduct",response_model=ProductRead)
