@@ -1,11 +1,22 @@
-import Image from "next/image";
+import Description from "@/components/description";
+import Footer from "@/components/footer";
+import FooterBottom from "@/components/footer-bottom";
+import Header from "@/components/header";
+import Hero from "@/components/herosection";
+import NewsLetter from "@/components/newsletter";
+import Product from "@/components/products";
+import Promotion from "@/components/promotion";
 
 export default function Home() {
-  console.log();
-
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-        
+    <main className="">
+      <Header />
+      <Hero />
+      <Promotion />
+      <Product />
+      <Description />
+      <NewsLetter />
+      <Footer />
     </main>
   );
 }

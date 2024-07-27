@@ -18,12 +18,22 @@ const LoginPage = () => {
         formdata.append("password", loginpassword)
         if (role.admin && confirmadmin == "1234567") {
             const message = await Login(formdata)
-            router.push("/admin")
-            toast.success(message?.message)
-        } else if (role.user) {
+            console.log(message);
+            if (message?.status == 400) {
+                toast.error(message?.message)
+            } else if (message?.status == 200) {
+                router.push("/admin")
+                toast.success(message?.message)
+            }
+
+        } else {
             const message = await Login(formdata)
-            router.push("/")
-            toast.success(message?.message)
+            if (message?.status == 400) {
+                toast.error(message?.message)
+            } else if (message?.status == 200) {
+                router.push("/")
+                toast.success(message?.message)
+            }
         }
     }
     return (

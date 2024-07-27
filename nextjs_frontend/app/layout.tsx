@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ToastProvider from "@/components/toastprovider";
 import "./globals.css";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 
 export const metadata: Metadata = {
@@ -15,7 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={"container"}>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;700&display=swap" rel="stylesheet" />
+      </head>
+      <body className={"container font-sans"}>
         <ToastProvider>
           {children}
         </ToastProvider>
