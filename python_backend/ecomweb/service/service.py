@@ -453,9 +453,39 @@ def service_add_to_cart(session:Session,cart_data:Cart,user:User,product_id:int)
     return cart_data
 
 def service_get_product_from_cart(session:Session,user:User):
-    product_from_cart = session.exec(select(Product).join(Cart).where(Cart.user_id == user.user_id))
+    product_from_cart = session.exec(
+        select(Cart, Product)
+        .join(Product, Cart.product_id == Product.product_id)
+        .where(Cart.user_id == user.user_id)
+    ).all()
+
     return product_from_cart
 
+def service_update_cart(cart_id:int,type:str,user:User,session:Session,product_price:int):
+    cart = session.exec(select(Cart).where(Cart.cart_id == cart_id and Cart.user_id == user.user_id)).first()
+    if not cart:
+        raise HTTPException(status="404",detail="Cart is missing")
+    if type == "add":
+        cart.total_cart_products +=1
+        cart.product_total = product_price * cart.total_cart_products
+    
+    elif type == "subtract":
+        if cart.total_cart_products > 0:
+            cart.total_cart_products -=1
+            cart.product_total = product_price * cart.total_cart_products
+    session.add(cart)
+    session.commit()
+    session.refresh(cart)
+    return cart
+    
+
+def service_delete_cart(cart_id:int,session:Session,user:User):
+    cart = session.exec(select(Cart).where(Cart.cart_id == cart_id and Cart.user_id == user.user_id)).first()
+    if not cart:
+        raise HTTPException(status="404",detail="Cart is missing")
+    session.delete(cart)
+    session.commit()
+    return {"message":"cart is removed!"}
 
 def service_get_cart_from_user(session:Session,user:User):
     carts = session.exec(select(Cart).where(Cart.user_id == user.user_id)).all()

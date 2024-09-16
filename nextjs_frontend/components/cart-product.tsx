@@ -6,11 +6,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Trash } from 'lucide-react';
 import deleteCart from "@/actions/deletecart"
-import getCart from "@/actions/getcart"
+import getProductFromCart from "@/actions/getproductfromcart"
 
 
 
-const CartProductCard = ({ product, setProducts }) => {
+const CartProductCard = ({ product, setRefreshFlag }) => {
     const [quantity, setQuantity] = useState(product.total_cart_products)
     const [totalPrice, setTotalPrice] = useState(product.product_total)
     const router = useRouter()
@@ -24,6 +24,7 @@ const CartProductCard = ({ product, setProducts }) => {
                 setQuantity((qnt) => qnt - 1)
                 setTotalPrice(cartData.message.product_total)
             }
+            setRefreshFlag(prev => !prev);
             router.refresh()
             console.log(cartData.message)
         } catch (error) {
@@ -33,10 +34,15 @@ const CartProductCard = ({ product, setProducts }) => {
     const serviceDeleteCart = async (cart_id: number) => {
         try {
             const deletedCart = await deleteCart(cart_id)
-            const prod = await getCart()
             console.log(deletedCart);
-            setProducts(prod.message)
-            toast.success(deletedCart.message)
+            if (deletedCart) {
+                setRefreshFlag(prev => !prev);
+                toast.success(deletedCart.message)
+                router.refresh()
+
+            } else {
+                console.error('Failed to delete the cart item');
+            }
         } catch (error) {
             console.error(error.message)
         }

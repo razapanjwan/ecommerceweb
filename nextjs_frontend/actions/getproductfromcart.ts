@@ -5,7 +5,8 @@ const getProductFromCart = async () => {
         method: "GET",
         headers: {
             'Authorization': `Bearer ${getCookie("access_token")}`
-        }
+        },
+        cache: "no-store"
     })
     if (product.ok) {
         const product_response = await product.json()

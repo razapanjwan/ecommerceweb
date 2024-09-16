@@ -6,19 +6,20 @@ import { useEffect, useState } from "react"
 import getProductFromCart from "@/actions/getproductfromcart"
 
 const CartPage = () => {
-    const [products, setProducts] = useState([])
+    const [products, setProducts] = useState([]);
+    const [refreshFlag, setRefreshFlag] = useState(false);
+
     useEffect(() => {
         const serviceGetCart = async () => {
             try {
-                const productData = await getProductFromCart()
-                setProducts(productData.message)
+                const productData = await getProductFromCart();
+                setProducts(productData.message);
             } catch (error) {
-                console.error(error.message)
+                console.error(error.message);
             }
-
-        }
-        serviceGetCart()
-    }, [products])
+        };
+        serviceGetCart();
+    }, [refreshFlag]);
     const cartEmpty = products.length == 0
     return (
         <>
@@ -34,7 +35,7 @@ const CartPage = () => {
                                             products && products.map((product, index) => {
                                                 return (
                                                     <>
-                                                        <CartProductCard product={product} key={index} setProducts={setProducts} />
+                                                        <CartProductCard product={product} setRefreshFlag={setRefreshFlag} />
                                                     </>
                                                 )
                                             })

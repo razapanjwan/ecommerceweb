@@ -29,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/api/signup",response_model=UserRead)
+@app.post("/api/signup",response_model=UserRead,tags=["USER"])
 def signup_users(session:Annotated[Session,Depends(get_session)],user_data:UserCreate) -> User:
     """
         This function is used to signup a new user.
@@ -46,7 +46,7 @@ def signup_users(session:Annotated[Session,Depends(get_session)],user_data:UserC
     user = User.model_validate(user_data)
     return service_signup(session,user)
 
-@app.post("/api/login",response_model=Token)
+@app.post("/api/login",response_model=Token,tags=["USER"])
 def login_user(request:Response,session:Annotated[Session,Depends(get_session)],form_data:OAuth2PasswordRequestForm = Depends()):
     """
         This function is used to login a user.
@@ -75,12 +75,12 @@ def login_user(request:Response,session:Annotated[Session,Depends(get_session)],
     request.set_cookie(key="refresh_token",value=refresh_token)
     return Token(access_token=access_token,refresh_token=refresh_token,expires_in=access_token_expire_time,token_type="bearer")
 
-@app.get("/logout/{user_id}")
+@app.get("/logout/{user_id}",tags=["USER"])
 def logout_user(response:Response,request:Request,session:Annotated[Session,Depends(get_session)],user:Annotated[User,Depends(get_current_user)],):
     user_loggedout = service_logout_user(session,user.user_id,response,request)
     return user_loggedout
 
-@app.patch("/updateuser")
+@app.patch("/updateuser",tags=["USER"])
 def update_user(session:Annotated[Session,Depends(get_session)],user_update:UserUpdate,user:Annotated[User,Depends(get_current_user)]):
     user = get_user_by_id(session,user.user_id)
     if user is None:
@@ -92,7 +92,7 @@ def update_user(session:Annotated[Session,Depends(get_session)],user_update:User
     session.refresh(user)
     return user
 
-@app.delete("/deleteuser")
+@app.delete("/deleteuser",tags=["USER"])
 def delete_user(session:Annotated[Session, Depends(get_session)], user_id:int):
     user = get_user_by_id(session, user_id)
     if user is None:
@@ -102,6 +102,10 @@ def delete_user(session:Annotated[Session, Depends(get_session)], user_id:int):
     return {
         "message":"User deleted"
     }
+
+@app.get("/api/me")
+def get_user(user:User = Depends(get_current_user)):
+    return user
 
 @app.post("/upload-file", tags=["Image"])
 async def get_file(file: Annotated[UploadFile, File(title="Product Image")], session: Annotated[Session, Depends(get_session)], user: Annotated[User, Depends(get_current_user)]):
@@ -131,40 +135,40 @@ def read_image(image_id: int, session: Annotated[Session, Depends(get_session)])
     return StreamingResponse(io.BytesIO(image.image_data), media_type=image.content_type)
 
 
-@app.post("/addproduct",response_model=ProductRead)
+@app.post("/addproduct",response_model=ProductRead,tags=["PRODUCT"])
 def add_product(session:Annotated[Session, Depends(get_session)], product_data:ProductCreate,user:Annotated[User,Depends(isadmin)]):
     product_info = Product.model_validate(product_data)
     product = product_add(session, product_info,user)
     return product
 
-@app.get("/getproduct",response_model=ProductRead)
-def get_product_from_id(session:Annotated[Session, Depends(get_session)], product_id:int,user:Annotated[User,Depends(get_current_user)]):
+@app.get("/api/getproduct",response_model=Product,tags=["PRODUCT"])
+def get_product_from_id(session:Annotated[Session, Depends(get_session)], product_id:int):
     product = get_product_by_id(session,product_id)
     return product  
 
-@app.get("/getproducts",response_model=list[ProductRead])
-def get_products(session:Annotated[Session, Depends(get_session)],user:Annotated[User,Depends(get_current_user)]):
+@app.get("/api/getproducts",response_model=list[Product],tags=["PRODUCT"])
+def get_products(session:Annotated[Session, Depends(get_session)]):
     product = get_all_products(session)
     return product
 
-@app.post("/createcategory",response_model=CategoryRead)
+@app.post("/createcategory",response_model=CategoryRead,tags=["CATEGORY"])
 def create_category(session:Annotated[Session,Depends(get_session)],category_data:CategoryCreate,user:Annotated[User,Depends(isadmin)]):
     category_info = Category.model_validate(category_data)
     category = service_create_category(session, category_info)
     return category
 
 
-@app.post("/productcategoryassociation",response_model=CategoryProductAssociation)
+@app.post("/productcategoryassociation",response_model=CategoryProductAssociation,tags=["CATEGORY"])
 def create_productsubcategoryassociation(session:Annotated[Session,Depends(get_session)],category_product_association_data:CategoryProductAssociation,user:Annotated[User,Depends(isadmin)]) -> CategoryProductAssociation:
     category_product_association_info = CategoryProductAssociation.model_validate(category_product_association_data)
     category_product_association = service_create_productsubcategoryassociation(session, category_product_association_info) 
     return category_product_association
 
-@app.get("/getproductbycategory/{category_id}",response_model=list[ProductRead])
+@app.get("/getproductbycategory/{category_id}",response_model=list[ProductRead],tags=["CATEGORY"])
 def get_product_from_category(session:Annotated[Session,Depends(get_session)],category_id):
     return service_get_product_from_category(session,category_id)
 
-@app.post("/createorder")
+@app.post("/createorder",tags=["ORDER"])
 def create_order(order_data:OrderCreate,address_data:AddressCreate,payment_data:PaymentCreate,user:Annotated[User , Depends(get_current_user)],session:Annotated[Session, Depends(get_session)]) -> OrderRead:
     
     order_info = Order.model_validate(order_data)
@@ -173,7 +177,7 @@ def create_order(order_data:OrderCreate,address_data:AddressCreate,payment_data:
     service_create_payment(session,user,order.order_id,payment_data)
     return order
 
-@app.patch("/updateorder")
+@app.patch("/updateorder",tags=["ORDER"])
 def update_order(order_update:OrderUpdate,order_id, user:Annotated[User, Depends(get_current_user)], session:Annotated[Session, Depends(get_session)]):
     order = service_get_order_by_id(session,order_id)
     if order:
@@ -186,30 +190,56 @@ def update_order(order_update:OrderUpdate,order_id, user:Annotated[User, Depends
             return service_order_update(session,user,order_id)
         return order 
 
-@app.delete("/deleteorder")
+@app.delete("/deleteorder",tags=["ORDER"])
 def delete_order(order_id, user:Annotated[User, Depends(get_current_user)], session:Annotated[Session, Depends(get_session)]):
     deleted_order = service_delete_order(session,order_id)
     return deleted_order
 
-@app.get("/getorder/{order_id}")
+@app.get("/getorder/{order_id}",tags=["ORDER"])
 def get_order_by_id(order_id:int,session:Annotated[Session,Depends(get_session)],user:Annotated[User,Depends(get_current_user)]):
     order = service_get_order_by_id(session,order_id)
     return order
 
-@app.post("/addtocart",response_model=CartRead)
+@app.post("/api/addtocart",response_model=CartRead,tags=["CART"])
 def add_to_cart(product_id:int,cart_info:CartCreate,session:Annotated[Session,Depends(get_session)],user:Annotated[User, Depends(get_current_user)]):
     cart_data = Cart.model_validate(cart_info)
     cart = service_add_to_cart(session,cart_data,user,product_id)
     return cart
 
-@app.get("/getproductfromcart",response_model=list[ProductRead])
+@app.get("/api/get-product-from-cart",tags=["CART"])
 def get_product_from_cart(session:Annotated[Session,Depends(get_session)],user:Annotated[User, Depends(get_current_user)]):
-    return service_get_product_from_cart(session,user)
+    cart_items = service_get_product_from_cart(session, user)
 
-@app.delete("/deletepayment")
+    response = [
+        {
+            "cart_id": cart.cart_id,
+            "total_cart_products": cart.total_cart_products,
+            "product_total": cart.product_total,
+            "product_size": cart.product_size,
+            "product_id": product.product_id,
+            "product_name": product.product_name,
+            "product_description": product.product_description,
+            "product_price": product.product_price,
+            "product_slug": product.product_slug,
+            "image_id": product.image_id  
+        }
+        for cart, product in cart_items
+    ]
+
+    return response
+
+@app.put("/api/update",tags=["CART"])
+def update_cart(cart_id:int,type:str,product_price:int,user:User = Depends(get_current_user),session:Session=Depends(get_session)):
+    return service_update_cart(cart_id,type,user,session,product_price)
+
+@app.delete("/deletepayment",tags=["ORDER"])
 def delete_payment(session:Annotated[Session,Depends(get_session)],order_id:int):
     return service_delete_payment(session,order_id)
 
-@app.delete("/deleteorderitem")
+@app.delete("/deleteorderitem",tags=["ORDER"])
 def delete_order_item(session:Annotated[Session,Depends(get_session)],order_id:int):
     return service_delete_order_item(session,order_id)
+
+@app.delete("/api/delete-cart",tags=["CART"])
+def delete_cart(cart_id:int,session:Session = Depends(get_session),user:User = Depends(get_current_user)):
+    return service_delete_cart(cart_id,session,user)
