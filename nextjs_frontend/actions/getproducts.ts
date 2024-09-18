@@ -2,7 +2,7 @@ const getProducts = async () => {
     try {
         const products = await fetch("http://localhost:8000/api/getproducts", {
             method: "GET",
-            // credentials: 'include',
+            credentials: 'include',
             cache: "no-store"
         })
         if (products.ok) {

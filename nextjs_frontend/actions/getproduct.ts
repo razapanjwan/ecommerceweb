@@ -2,7 +2,7 @@ const getProduct = async (product_id: number) => {
     try {
         const product = await fetch(`http://localhost:8000/api/getproduct?product_id=${product_id}`, {
             method: "GET",
-            cache: "force-cache"
+            cache: "no-store"
         })
         if (product.ok) {
             const data = await product.json()

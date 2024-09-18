@@ -126,7 +126,7 @@ async def get_file(file: Annotated[UploadFile, File(title="Product Image")], ses
     else:
         raise HTTPException(status_code=400, detail="Invalid file type. Only images are allowed.")
 
-@app.get("/images/{image_id}", tags=["Image"])
+@app.get("/api/image", tags=["Image"])
 def read_image(image_id: int, session: Annotated[Session, Depends(get_session)]):
     image = session.get(Image, image_id)
     if not image:
@@ -164,11 +164,15 @@ def create_productsubcategoryassociation(session:Annotated[Session,Depends(get_s
     category_product_association = service_create_productsubcategoryassociation(session, category_product_association_info) 
     return category_product_association
 
-@app.get("/getproductbycategory/{category_id}",response_model=list[ProductRead],tags=["CATEGORY"])
+@app.get("/api/getproductbycategory",response_model=list[Product],tags=["CATEGORY"])
 def get_product_from_category(session:Annotated[Session,Depends(get_session)],category_id):
     return service_get_product_from_category(session,category_id)
 
-@app.post("/createorder",tags=["ORDER"])
+@app.get("/api/getcategory")
+def get_category(category_slug:str,session:Annotated[Session,Depends(get_session)]):
+    return service_get_category(session=session,category_slug=category_slug)
+
+@app.post("/api/createorder",tags=["ORDER"])
 def create_order(order_data:OrderCreate,address_data:AddressCreate,payment_data:PaymentCreate,user:Annotated[User , Depends(get_current_user)],session:Annotated[Session, Depends(get_session)]) -> OrderRead:
     
     order_info = Order.model_validate(order_data)
@@ -195,9 +199,9 @@ def delete_order(order_id, user:Annotated[User, Depends(get_current_user)], sess
     deleted_order = service_delete_order(session,order_id)
     return deleted_order
 
-@app.get("/getorder/{order_id}",tags=["ORDER"])
+@app.get("/api/getorder",tags=["ORDER"])
 def get_order_by_id(order_id:int,session:Annotated[Session,Depends(get_session)],user:Annotated[User,Depends(get_current_user)]):
-    order = service_get_order_by_id(session,order_id)
+    order = service_get_order_by_id(session,order_id,user)
     return order
 
 @app.post("/api/addtocart",response_model=CartRead,tags=["CART"])
@@ -243,3 +247,29 @@ def delete_order_item(session:Annotated[Session,Depends(get_session)],order_id:i
 @app.delete("/api/delete-cart",tags=["CART"])
 def delete_cart(cart_id:int,session:Session = Depends(get_session),user:User = Depends(get_current_user)):
     return service_delete_cart(cart_id,session,user)
+
+@app.get("/api/getorderitem")
+def get_orderitem(order_id:int,session:Session = Depends(get_session),user:User = Depends(get_current_user)):
+    orderitems = service_get_orderitem(session,user,order_id)
+    response = [
+        {
+            "orderitem_id": orderitem.orderitem_id,
+            "total_cart_products": orderitem.total_cart_products,
+            "product_total": orderitem.product_total,
+            "product_size": orderitem.product_size,
+            "product_id": product.product_id,
+            "product_name": product.product_name,
+            "product_description": product.product_description,
+            "product_price": product.product_price,
+            "product_slug": product.product_slug,
+            "image_id": product.image_id,
+            "order_id":orderitem.order_id
+        }
+        for orderitem, product in orderitems
+    ]
+
+    return response
+
+@app.get("/api/getaddress")
+def get_address(order_id:int,session:Session = Depends(get_session),user:User = Depends(get_current_user)):
+    return service_get_address(session,user,order_id)

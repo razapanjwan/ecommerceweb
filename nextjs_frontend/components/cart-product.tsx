@@ -10,7 +10,7 @@ import getProductFromCart from "@/actions/getproductfromcart"
 
 
 
-const CartProductCard = ({ product, setRefreshFlag }) => {
+const CartProductCard = ({ product, serviceDeleteCart }) => {
     const [quantity, setQuantity] = useState(product.total_cart_products)
     const [totalPrice, setTotalPrice] = useState(product.product_total)
     const router = useRouter()
@@ -24,33 +24,16 @@ const CartProductCard = ({ product, setRefreshFlag }) => {
                 setQuantity((qnt) => qnt - 1)
                 setTotalPrice(cartData.message.product_total)
             }
-            setRefreshFlag(prev => !prev);
             router.refresh()
             console.log(cartData.message)
         } catch (error) {
             toast.error(error.message)
         }
     }
-    const serviceDeleteCart = async (cart_id: number) => {
-        try {
-            const deletedCart = await deleteCart(cart_id)
-            console.log(deletedCart);
-            if (deletedCart) {
-                setRefreshFlag(prev => !prev);
-                toast.success(deletedCart.message)
-                router.refresh()
-
-            } else {
-                console.error('Failed to delete the cart item');
-            }
-        } catch (error) {
-            console.error(error.message)
-        }
-    }
     return (
 
-        <div className="w-full">
-            <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+        <div className="w-full" >
+            <div className="bg-white rounded-lg shadow-md p-6 mb-4" >
                 <table className="w-full">
                     <thead>
                         <tr>
@@ -79,7 +62,7 @@ const CartProductCard = ({ product, setRefreshFlag }) => {
                                 </div>
                             </td>
                             <td className="py-4"><button onClick={() => { serviceDeleteCart(product.cart_id) }}><Trash /></button></td>
-                            <td className="py-4">{totalPrice}</td>
+                            <td className="py-4">{totalPrice}.00$</td>
                         </tr>
                     </tbody>
                 </table>

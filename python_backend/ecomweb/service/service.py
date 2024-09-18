@@ -301,21 +301,31 @@ def service_create_category(session:Session,category:Category) -> Category:
     session.refresh(category)
     return category
 
-def service_get_order_by_id(session:Session, order_id:int) -> Order:
+def service_get_order_by_id(session:Session, order_id:int,user:User) -> Order:
     """
 
     """
-    order = session.exec(select(Order).where(Order.order_id == order_id)).first()
+    order = session.exec(select(Order).where(Order.order_id == order_id and Order.user_id == user.user_id)).first()
     if order is None:
         raise HTTPException(status_code=404, detail="order not found!")
     return order
+
+def service_get_orderitem(session:Session,user:User,order_id:int):
+    orderitems = session.exec(
+        select(OrderItem, Product)
+        .join(Product, OrderItem.product_id == Product.product_id and OrderItem.order_id == order_id)
+        .where(OrderItem.order_id == order_id)
+    ).all()
+    if not orderitems:
+        raise HTTPException(status = 400 ,detail="Could not get Order Items!")
+    return orderitems
 
 def service_create_address(session:Session,address_data:Address,order_id:int,user:User):
     order = service_get_order_by_id(session,order_id)
     print(order)
     if order:
         
-        address = Address(order_id=order_id,user_id=user.user_id,address_name=address_data.address_name)
+        address = Address(order_id=order_id,user_id=user.user_id,street_address=address_data.street_address,city=address_data.city,country=address_data.country)
         session.add(address)
         session.commit()
         session.refresh(address)
@@ -372,6 +382,7 @@ def service_create_order(session:Session, order:Order, user:User) -> Order:
         raise HTTPException(status_code=404,detail="Cart is Empty!")
     
     order.user_id = user.user_id
+    order.order_status = "pending"
     session.add(order)
     session.commit()
     session.refresh(order)
@@ -385,7 +396,11 @@ def service_create_order(session:Session, order:Order, user:User) -> Order:
         session.commit()  
     return order 
     
-
+def service_get_address(session:Session,user:User,order_id:int):
+    address = session.exec(select(Address).where(Address.order_id == order_id and Address.user_id == user.user_id)).first()
+    if not address:
+        raise HTTPException(status_code=404,detail="There is no Address!")
+    return address  
 
 
 def service_create_productsubcategoryassociation(session:Session,category_product_association:CategoryProductAssociation):
@@ -490,3 +505,9 @@ def service_delete_cart(cart_id:int,session:Session,user:User):
 def service_get_cart_from_user(session:Session,user:User):
     carts = session.exec(select(Cart).where(Cart.user_id == user.user_id)).all()
     return carts
+
+def service_get_category(session:Session,category_slug:int):
+    category = session.exec(select(Category).where(Category.category_slug == category_slug)).first()
+    if not category:
+        raise HTTPException(status_code=404,detail="Could not get category!")
+    return category

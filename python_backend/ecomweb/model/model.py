@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime,timedelta
 from enum import Enum
+from pydantic import validator
+import re
 
 class UserRole(str,Enum):
     admin:str = "admin"
@@ -12,13 +14,13 @@ class UserBase(SQLModel):
     username:str = Field(nullable=False,index=True,unique=True) 
     password:str = Field(nullable=False)
     role: UserRole
-    
+
 class UserCreate(UserBase):
     firstname:str
     lastname:str
     email:str
     confirm_password:str
-
+    
 class User(UserBase, table = True):
     user_id:int | None = Field(primary_key=True, default=None)
     firstname:str = Field(nullable=False)
@@ -82,11 +84,11 @@ class ProductBase(SQLModel):
 
 class Product(ProductBase,table=True):
     product_id:int | None = Field(primary_key=True,default=None)
-    image_id: int = Field(foreign_key="image.id")
+    image_id: int | None = Field(foreign_key="image.id")
     
 
 class ProductCreate(ProductBase):
-    pass
+    image_id: int | None
 
 
 
@@ -118,6 +120,7 @@ class CartRead(CartBase):
 class CategoryBase(SQLModel):
     category_name:str
     category_description:str
+    category_slug:str
 
 class Category(CategoryBase,table=True):
     category_id:int | None = Field(primary_key=True,default=None)
@@ -141,17 +144,41 @@ class OrderStatus(str,Enum):
     DELIVERED:str = "delivered"
 
 class OrderBase(SQLModel):
-    order_status:OrderStatus
     customer_name:str
     customer_email:str
+    customer_phoneno:str
+
 
 
 class Order(OrderBase,table = True):
     order_id:int | None = Field(primary_key=True,default=None)
     user_id:int | None = Field(foreign_key="user.user_id",default=None)
+    order_status:OrderStatus
+
+def format_phone_number(value: str) -> str:
+    value = re.sub(r'\D', '', value)
+    if value.startswith("92") and len(value) == 12:
+        return value 
+    elif value.startswith("0") and len(value) == 11:
+        return f"92{value[1:]}" 
+    elif len(value) == 10:
+        return f"92{value}"
+    elif value.startswith("923") and len(value) == 12:
+        return value[1:]
+    elif value.startswith("+92") and len(value) == 13:
+        return value[1:]
+    else:
+        raise ValueError("Invalid phone number format. Please use a valid format.")
+    
 
 class OrderCreate(OrderBase):
-    pass
+    order_status:OrderStatus
+    @validator('customer_phoneno', pre=True, always=True)
+    def validate_and_format_phone_number(cls, value):
+        if value:
+            return format_phone_number(value)
+        return value
+
 
 class OrderUpdate(SQLModel):
     order_status:OrderStatus
@@ -160,26 +187,11 @@ class OrderRead(OrderBase):
     pass
     
 
-class Rating(int,Enum):
-    ONE_STAR:int = 1
-    TWO_STAR:int = 2
-    THREE_STAR:int = 3
-    FOUR_STAR:int = 4
-    FIVE_STAR:int = 5
-
-class ReviewBase(SQLModel):
-    review_comment:str
-    review_rating:Rating
-
-class Review(ReviewBase,table=True):
-    review_id:int | None = Field(primary_key=True,default=None)
-    review_date:datetime = Field(default_factory=datetime.now)
-    product_id:int | None = Field(foreign_key="product.product_id",default=None)
-    user_id:int | None = Field(foreign_key="user.user_id",default=None)
-
 
 class AddressBase(SQLModel):
-    address_name :str
+    street_address :str
+    city:str
+    country:str
 
 
 class Address(AddressBase,table = True):

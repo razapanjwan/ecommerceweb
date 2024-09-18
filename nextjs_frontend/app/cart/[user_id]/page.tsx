@@ -4,23 +4,48 @@ import CartProductCard from "@/components/cart-product"
 import getProduct from "@/actions/getproduct"
 import { useEffect, useState } from "react"
 import getProductFromCart from "@/actions/getproductfromcart"
+import updateCart from "@/actions/upadatecart"
+import deleteCart from "@/actions/deletecart"
+import { toast } from "react-toastify"
+import Link from "next/link"
 
-const CartPage = () => {
+const CartPage = ({ params }: { params: { user_id: number } }) => {
     const [products, setProducts] = useState([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
-
-    useEffect(() => {
-        const serviceGetCart = async () => {
-            try {
-                const productData = await getProductFromCart();
-                setProducts(productData.message);
-            } catch (error) {
-                console.error(error.message);
+    const serviceGetCart = async () => {
+        try {
+            const productData = await getProductFromCart();
+            setProducts(productData.message);
+        } catch (error) {
+            console.error(error.message);
+        }
+    };
+    const serviceDeleteCart = async (cart_id: number) => {
+        try {
+            const deletedCart = await deleteCart(cart_id)
+            console.log(deletedCart);
+            if (deletedCart) {
+                toast.success(deletedCart.message)
+                serviceGetCart()
+            } else {
+                console.error('Failed to delete the cart item');
             }
-        };
+        } catch (error) {
+            console.error(error.message)
+        }
+    }
+    const totalPrice = products.reduce((acc, product) => {
+        return acc + (product.product_price * product.total_cart_products);
+    }, 0);
+    useEffect(() => {
         serviceGetCart();
-    }, [refreshFlag]);
+    }, []);
+
+
     const cartEmpty = products.length == 0
+    const tax = 2
+    const shipping = 1
+    const subTotal = totalPrice + tax + shipping
     return (
         <>
             {
@@ -33,9 +58,11 @@ const CartPage = () => {
                                     <div className="w-full">
                                         {
                                             products && products.map((product, index) => {
+
                                                 return (
                                                     <>
-                                                        <CartProductCard product={product} setRefreshFlag={setRefreshFlag} />
+                                                        <CartProductCard product={product} serviceDeleteCart={serviceDeleteCart} />
+
                                                     </>
                                                 )
                                             })
@@ -46,22 +73,22 @@ const CartPage = () => {
                                             <h2 className="text-lg font-semibold mb-4">Summary</h2>
                                             <div className="flex justify-between mb-2">
                                                 <span>Subtotal</span>
-                                                <span>$19.99</span>
+                                                <span>{totalPrice}.00$</span>
                                             </div>
                                             <div className="flex justify-between mb-2">
                                                 <span>Taxes</span>
-                                                <span>$1.99</span>
+                                                <span>{tax}.00$</span>
                                             </div>
                                             <div className="flex justify-between mb-2">
                                                 <span>Shipping</span>
-                                                <span>$0.00</span>
+                                                <span>{shipping}.00$</span>
                                             </div>
 
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-semibold">Total</span>
-                                                <span className="font-semibold">$21.98</span>
+                                                <span className="font-semibold">{subTotal}.00$</span>
                                             </div>
-                                            <button className="bg-blue-500 text-white py-2 px-4 rounded-lg mt-4 w-full">Checkout</button>
+                                            <Link href={`/checkout/${params.user_id}`} className="bg-blue-500 text-white py-2 px-4 rounded-lg mt-4 w-full">Checkout</Link>
                                         </div>
                                     </div>
                                 </div>

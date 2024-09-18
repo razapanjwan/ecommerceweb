@@ -58,7 +58,7 @@ const Header = (): any => {
                             <li><Link href={"/"}>female</Link></li>
                             <li><Link href={"/"}>male</Link></li>
                             <li><Link href={"/"}>kid</Link></li>
-                            <li><Link href={"/"}>all products</Link></li>
+                            <li><Link href={"/allproducts"}>all products</Link></li>
                         </ul>
                     </nav>
                     <div>
