@@ -20,14 +20,15 @@ const product = ({ params }: { params: { id: number } }) => {
     const [show, setShow] = useState(true)
     const sizes = ["large", "small", "medium"]
     const [selectedDiv, setSelectedDiv] = useState(null);
+    const [imageUrl, setImageUrl] = useState("");
+    const [imageLoader, setImageLoader] = useState(true)
     async function productss() {
         const products: any = await getProduct(params.id)
         console.log(products);
         setProduct(products)
     }
     const eventAddToCart = async () => {
-        const [imageUrl, setImageUrl] = useState("");
-        const [imageLoader, setImageLoader] = useState(true)
+
 
         async function serviceGetImage(image_id: number) {
             try {
@@ -82,7 +83,7 @@ const product = ({ params }: { params: { id: number } }) => {
         async function fetchProducts() {
             try {
                 await productss()
-                await serviceGetI
+                // await serviceGetI
             } catch (err) {
                 setError(err);
             } finally {

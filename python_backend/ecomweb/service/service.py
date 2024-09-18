@@ -321,7 +321,7 @@ def service_get_orderitem(session:Session,user:User,order_id:int):
     return orderitems
 
 def service_create_address(session:Session,address_data:Address,order_id:int,user:User):
-    order = service_get_order_by_id(session,order_id)
+    order = service_get_order_by_id(session,order_id,user)
     print(order)
     if order:
         
@@ -340,7 +340,7 @@ def service_delete_address(session:Session,order_id:int):
     return {"message":"Address Deleted!"}
 
 def service_create_payment(session:Session,user:User,order_id:int,payment_data:Payment):
-    order = service_get_order_by_id(session,order_id)
+    order = service_get_order_by_id(session,order_id,user)
     if order:
         payment = Payment(order_id=order_id,user_id=user.user_id,payment_method=payment_data.payment_method)
         session.add(payment)

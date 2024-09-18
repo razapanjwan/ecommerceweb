@@ -183,7 +183,7 @@ def create_order(order_data:OrderCreate,address_data:AddressCreate,payment_data:
 
 @app.patch("/updateorder",tags=["ORDER"])
 def update_order(order_update:OrderUpdate,order_id, user:Annotated[User, Depends(get_current_user)], session:Annotated[Session, Depends(get_session)]):
-    order = service_get_order_by_id(session,order_id)
+    order = service_get_order_by_id(session,order_id,user)
     if order:
         order_data = order_update.model_dump(exclude_unset = True)
         order.sqlmodel_update(order_data)
