@@ -184,7 +184,7 @@ class OrderUpdate(SQLModel):
     order_status:OrderStatus
 
 class OrderRead(OrderBase):
-    pass
+    order_id:int
     
 
 

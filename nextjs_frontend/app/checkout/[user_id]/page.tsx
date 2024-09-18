@@ -34,8 +34,11 @@ const CheckOut = ({ params }: { params: { user_id: number } }) => {
         try {
             const Order = await createOrder(orderDetails)
             if (Order) {
+                console.log(Order, "Order");
                 toast.success("Order Success!")
-                window.location.href = `/orderconfirmation/${Order.order_id}`
+                if (Order.order_id) {
+                    window.location.href = `/orderconfirmation/${Order.order_id}`
+                }
                 console.log(Order, "Order");
             }
         } catch (error) {
