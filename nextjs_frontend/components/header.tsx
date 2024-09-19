@@ -55,9 +55,9 @@ const Header = (): any => {
                 <div className={`${isOpen ? "hidden" : "flex bg-white"} lg:flex-row justify-center lg:relative lg:top-none items-center left-0 fixed right-0 top-0 bottom-0 lg:h-fit h-screen gap-[1rem] mx-auto lg:mx-0 flex-col lg:flex lg:justify-between lg:items-center transform transition-transform duration-500 ease-in-out animate-fadeIn  `}>
                     <nav>
                         <ul className="lg:flex lg:flex-row capitalize lg:gap-16 text-xl text-center flex gap-5 flex-col ">
-                            <li><Link href={"/"}>female</Link></li>
-                            <li><Link href={"/"}>male</Link></li>
-                            <li><Link href={"/"}>kid</Link></li>
+                            <li><Link href={"/female"}>female</Link></li>
+                            <li><Link href={"/male"}>male</Link></li>
+                            <li><Link href={"/kids"}>kid</Link></li>
                             <li><Link href={"/allproducts"}>all products</Link></li>
                         </ul>
                     </nav>

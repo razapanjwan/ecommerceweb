@@ -5,7 +5,7 @@ import PageLoader from "@/components/page-loader"
 import ProductCard from "@/components/product-card"
 import { useEffect, useState } from "react"
 
-const Female = () => {
+const Male = () => {
     const [category, setCategory] = useState<any>({})
     const [products, setProducts] = useState([])
     const [loader, setLoader] = useState(true)
@@ -19,7 +19,7 @@ const Female = () => {
     }
     const serviceGetAllProductCategory = async () => {
         try {
-            let categoryResponse = await getCategory("female")
+            let categoryResponse = await getCategory("kids")
             await serviceGetProductFromCategory(categoryResponse.category_id)
             setCategory(categoryResponse)
         } catch (error) {
@@ -61,8 +61,7 @@ const Female = () => {
             }
 
 
-
         </>
     )
 }
-export default Female
+export default Male

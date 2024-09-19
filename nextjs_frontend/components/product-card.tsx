@@ -1,12 +1,36 @@
+"use client"
 import Image from "next/image"
 import image1 from "../public/event1.webp"
 import Link from "next/link"
+import getImage from "@/actions/getimage"
+import { useEffect, useState } from "react"
+import ImageLoader from "./imageloader"
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, image_id }) => {
+    const [imageUrl, setImageUrl] = useState("");
+    const [imageLoader, setImageLoader] = useState(true)
+    async function serviceGetImage(image_id: number) {
+        try {
+            const imageBlob: any = await getImage(image_id)
+            const url = URL.createObjectURL(imageBlob);
+            setImageUrl(url);
+        } catch (error) {
+            console.error(error.message)
+        } finally {
+            setImageLoader(false)
+        }
+
+    }
+    useEffect(() => {
+        serviceGetImage(image_id)
+    }, [])
     return (
         <div className="md:w-1/4 w-full m-8 md:m-0  bg-white rounded-lg overflow-hidden shadow-lg ">
-            <div className="relative bg-gray-600">
-                <Image className="w-full" src={image1} alt="Product Image" />
+            <div className="relative">
+                {
+                    imageLoader ? <ImageLoader /> :
+                        <Image className="w-full" src={imageUrl} alt="Product Image" width={100} height={100} />
+                }
             </div>
             <div className="p-4">
                 <h3 className="text-lg font-medium mb-2">{product.product_name}</h3>

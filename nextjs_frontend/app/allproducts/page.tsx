@@ -1,5 +1,6 @@
 "use client"
 import getCategory from "@/actions/getcategory"
+import getImage from "@/actions/getimage"
 import getProductFromCategory from "@/actions/getproductfromcategory"
 import PageLoader from "@/components/page-loader"
 import ProductCard from "@/components/product-card"
@@ -9,6 +10,9 @@ const AllProducts = () => {
     const [category, setCategory] = useState<any>({})
     const [products, setProducts] = useState([])
     const [loader, setLoader] = useState(true)
+
+
+
 
     const serviceGetProductFromCategory = async (category_id) => {
         try {
@@ -42,12 +46,12 @@ const AllProducts = () => {
                 loader ? <PageLoader /> :
                     <>
                         <h1 className="uppercase font-bold text-5xl my-10">{category.category_name}</h1>
-                        <div className="flex flex-wrap justify-center items-center md:justify-between">
+                        <div className="flex flex-wrap justify-center items-center md:justify-between min-h-[500px] ">
                             {
                                 products && products.map((product) => {
                                     return (
                                         <>
-                                            <ProductCard product={product} />
+                                            <ProductCard product={product} image_id={[product.image_id]} />
                                         </>
                                     )
                                 })

@@ -27,21 +27,19 @@ const product = ({ params }: { params: { id: number } }) => {
         console.log(products);
         setProduct(products)
     }
-    const eventAddToCart = async () => {
-
-
-        async function serviceGetImage(image_id: number) {
-            try {
-                const imageBlob: any = await getImage(image_id)
-                const url = URL.createObjectURL(imageBlob);
-                setImageUrl(url);
-            } catch (error) {
-                console.error(error.message)
-            } finally {
-                setImageLoader(false)
-            }
-
+    async function serviceGetImage(image_id: number) {
+        try {
+            const imageBlob: any = await getImage(image_id)
+            const url = URL.createObjectURL(imageBlob);
+            setImageUrl(url);
+        } catch (error) {
+            console.error(error.message)
+        } finally {
+            setImageLoader(false)
         }
+
+    }
+    const eventAddToCart = async () => {
 
         try {
             let prd = await getProduct(params.id)
@@ -83,7 +81,7 @@ const product = ({ params }: { params: { id: number } }) => {
         async function fetchProducts() {
             try {
                 await productss()
-                // await serviceGetI
+                await serviceGetImage(params.id)
             } catch (err) {
                 setError(err);
             } finally {
@@ -103,7 +101,7 @@ const product = ({ params }: { params: { id: number } }) => {
                     error ? <div>Error: {error.message}</div> :
                         <section className="bg-[#fcfcfc] p-16 flex flex-col gap-[5rem]">
                             <div className="flex flex-col lg:flex-row gap-[79px] ">
-                                <Image src={Slider1} alt="product Image" className="w-[582px] h-[626px]" />
+                                <Image src={imageUrl} alt="product Image" className="w-[582px] h-[626px]" width={100} height={100} />
                                 <div className={`mt-[4rem] flex-col gap-[2.5rem]  flex`}>
                                     <div>
                                         <h3 className="font-normal text-[1.625rem] leading-[35px] tracking-[.03em] text-[#212121] capitalize">{product.product_name}</h3>

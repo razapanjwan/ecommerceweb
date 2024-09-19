@@ -5,6 +5,8 @@ import PageLoader from "@/components/page-loader"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import getAddress from "@/actions/getaddress"
+import Image from "next/image"
+import OrderItem from "@/components/order-item-card"
 
 const OrderConfirmation = ({ params }: { params: { order_id: number } }) => {
     const [order, setOrder] = useState<any>({})
@@ -12,12 +14,16 @@ const OrderConfirmation = ({ params }: { params: { order_id: number } }) => {
     const [futureDate, setFutureDate] = useState('');
     const [address, setAddress] = useState<any>({})
     const [loader, setLoader] = useState(true)
+
+
     const totalPrice = orderItem.reduce((acc, product) => {
         return acc + (product.product_price * product.total_cart_products);
     }, 0);
     const tax = 2
     const shipping = 1
     const subTotal = totalPrice + tax + shipping
+
+    
     const serviceGetOrder = async () => {
         try {
             let orderResponse = await getOrder(params.order_id)
@@ -84,17 +90,7 @@ const OrderConfirmation = ({ params }: { params: { order_id: number } }) => {
                                         {
                                             orderItem && orderItem.map((item) => {
                                                 return (
-                                                    <div className="w-full md:px-6 px-2 pb-5 justify-between items-center gap-8 inline-flex border-b border-gray-300">
-                                                        <div className="justify-start items-center gap-6 flex md:pb-5">
-                                                            <img className="object-cover" src="https://pagedone.io/asset/uploads/1717406948.png" alt="Simple Black T-shirt image" />
-                                                            <div className="flex-col justify-start items-start gap-1.5 inline-flex">
-                                                                <h5 className="text-gray-900 text-lg font-semibold leading-relaxed">{item.product_name}</h5>
-                                                                <h6 className="text-gray-500 text-base font-normal leading-relaxed">QTY: {item.total_cart_products}</h6>
-                                                                <h4 className="text-gray-500 text-base font-normal leading-relaxed">SIZE: {item.product_size}</h4>
-                                                            </div>
-                                                        </div>
-                                                        <h4 className="text-right text-gray-900 text-lg font-medium leading-relaxed">{item.product_total}.00$</h4>
-                                                    </div>
+                                                    <OrderItem item={item} image_id={item.image_id} />
                                                 )
                                             })
                                         }
