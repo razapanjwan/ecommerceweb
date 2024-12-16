@@ -1,7 +1,7 @@
 const Login = async (formData: any) => {
 
     try {
-        const loginResponse = await fetch("http://localhost:8000/api/login", {
+        const loginResponse = await fetch("http://0.0.0.0:8000/api/login", {
             body: formData,
             method: "POST",
             headers: {
